@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: session-db
+  labels:
+    name: session-db
+  namespace: sock-shop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: session-db
+  template:
+    metadata:
+      labels:
+        name: session-db
+      annotations:
+        prometheus.io.scrape: "false"
+    spec:
+      containers:
+      - name: session-db
+        image: redis:alpine
+        command:
+        - redis-server
+        - "/usr/local/etc/redis/redis.conf"
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: 80m
+            memory: 150Mi
+        ports:
+        - name: redis
+          containerPort: 6379
+        securityContext:
+          capabilities:
+            drop:
+              - all
+            add:
+              - CHOWN
+              - SETGID
+              - SETUID
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /usr/local/etc/redis
+          name: redis-config
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-configmap
+          items:
+          - key: redis-config
+            path: redis.conf
+      nodeSelector:
+        beta.kubernetes.io/os: linux

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-configmap
+data:
+  redis-config: |
+    maxmemory 6mb
+    maxmemory-policy noeviction
+    rdbchecksum yes
+    rdbcompression yes
+    save 90 100
+    save 50 1000
+    save 10 15000
+    appendonly no
+    appendfsync everysec
+    
